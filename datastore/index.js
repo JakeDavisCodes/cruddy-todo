@@ -82,6 +82,14 @@ exports.readAll = (callback) => {
 };
 
 exports.readOne = (id, callback) => {
+  // debugger
+  fs.readFile(dir + id + '.txt', 'utf8', (err, data) => {
+    if (err) {
+      callback(new Error(`No item with id: ${id}`), '');
+    } else {
+      callback(null, { id: id, text: data});
+    }
+  });
 
   /** GOALS
    *
@@ -99,12 +107,6 @@ exports.readOne = (id, callback) => {
 
 
 
-  var text = items[id];
-  if (!text) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback(null, { id, text });
-  }
 };
 
 exports.update = (id, text, callback) => {
@@ -117,46 +119,37 @@ exports.update = (id, text, callback) => {
    * I: id, updatedText, callback
    * O: calls callback with err, dataObject
    *
-   * fs.writeFile(dataDir:id, text, (err, data) => {     // Doc: https://www.geeksforgeeks.org/node-js-fs-writefile-method/
-   *  console.log(data)      I wanna see what data is
+   *
+   *
+   * fs.writeFile(dataDir:id, text, (err, data) => {                  // Doc: https://www.geeksforgeeks.org/node-js-fs-writefile-method/
    *  callback(err, data)
    * })
    */
-
-
-
-  var item = items[id];
-  if (!item) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    items[id] = text;
-    callback(null, { id, text });
-  }
+  fs.access(dir + id + '.txt', (err) => {
+    if (err) {
+      callback(new Error ('No such file exists'));
+    } else {
+      fs.writeFile(dir + id + '.txt', text, (err) => {
+        if (err) {
+          callback(new Error(`No item with id: ${id}`));
+        } else {
+          callback(null, {id: id, text: text});
+        }
+      });
+    }
+  });
 };
 
 exports.delete = (id, callback) => {
-
-  /** GOALS
-   *
-   * Remove the todo file at dataDir:id
-   *
-   * Psuedo
-   * I: File ID, callback
-   * O: call callback with err
-   *
-   * fs.unlink(dataDir:id, err => callback(err))
-   */
+  fs.unlink(dir + id + '.txt', (err) => {
+    if (err) {
+      callback(new Error('Failed - No such file'));
+    } else {
+      callback();
+    }
+  });
 
 
-
-  var item = items[id];
-  delete items[id];
-  if (!item) {
-    // report an error if item not found
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback();
-  }
 };
 
 // Config+Initialization code -- DO NOT MODIFY /////////////////////////////////
